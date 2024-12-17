@@ -14,7 +14,6 @@ spec:
     spec:
       containers:
       - name: app1
-        image: <DOCKER_REGISTRY>/app1:latest
+        image: sanjaypramod/monorepo:app1  # Docker image for app1
         ports:
         - containerPort: 3000
-
