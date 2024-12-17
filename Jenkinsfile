@@ -2,13 +2,17 @@ pipeline {
     agent any
     environment {
         DOCKER_REGISTRY = "sanjaypramod/monorepo"  // Your Docker Hub repository
-        KUBECONFIG = "/etc/rancher/k3s/k3s.yaml"  // Path to k3s kubeconfig file
     }
     stages {
         stage('Checkout Code') {
             steps {
-                echo "Checking out code..."
-                checkout scm
+                echo "Checking out code from GitHub..."
+                withCredentials([string(credentialsId: 'git-access-token', variable: 'GIT_ACCESS_TOKEN')]) {
+                    sh """
+                        git clone https://$GIT_ACCESS_TOKEN@github.com/Sanjaypramod/monorepo.git
+                        cd monorepo
+                    """
+                }
             }
         }
 
@@ -19,7 +23,7 @@ pipeline {
                     apps.each { app ->
                         echo "Building Docker image for ${app}..."
                         sh """
-                            cd ${app}
+                            cd monorepo/${app}
                             docker build -t ${DOCKER_REGISTRY}:${app} .
                         """
                     }
@@ -29,7 +33,7 @@ pipeline {
 
         stage('Push Docker Images') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     script {
                         def apps = ['app1', 'app2']
@@ -44,28 +48,31 @@ pipeline {
             }
         }
 
-//         stage('Deploy to k3s') {
-//             steps {
-//                 script {
-//                     def apps = ['app1', 'app2']
-//                     apps.each { app ->
-//                         echo "Deploying ${app} to k3s..."
-//                         sh """
-//                             kubectl apply -f ${app}/k8s/deployment.yaml
-//                             kubectl apply -f ${app}/k8s/service.yaml
-//                         """
-//                     }
-//                 }
-//             }
-//         }
-//     }
+        stage('Deploy to k3s') {
+            steps {
+                withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG_FILE')]) {
+                    script {
+                        def apps = ['app1', 'app2']
+                        sh 'export KUBECONFIG=$KUBECONFIG_FILE'
+                        apps.each { app ->
+                            echo "Deploying ${app} to k3s..."
+                            sh """
+                                kubectl apply -f monorepo/${app}/k8s/deployment.yaml
+                                kubectl apply -f monorepo/${app}/k8s/service.yaml
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-//     post {
-//         success {
-//             echo "All applications have been successfully deployed to k3s."
-//         }
-//         failure {
-//             echo "Pipeline failed! Check the logs."
-//         }
-//     }
-// }
+    post {
+        success {
+            echo "All applications have been successfully deployed to k3s."
+        }
+        failure {
+            echo "Pipeline failed! Check the logs."
+        }
+    }
+}
