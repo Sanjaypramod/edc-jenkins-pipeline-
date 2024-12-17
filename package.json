@@ -1,0 +1,19 @@
+{
+  "name": "monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "app1",
+    "app2"
+  ],
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
+    "start:app1": "lerna run start --scope app1",
+    "start:app2": "lerna run start --scope app2"
+  },
+  "devDependencies": {
+    "lerna": "^6.0.0"
+  }
+}
+
