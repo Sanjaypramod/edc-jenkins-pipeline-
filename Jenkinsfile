@@ -12,11 +12,11 @@ pipeline {
                 withCredentials([string(credentialsId: 'GIT_ACCESS_TOKEN', variable: 'GIT_ACCESS_TOKEN')]) {
                     sh '''#!/bin/bash
                         set -e
-                        if [ -d "monorepo" ]; then
-                            rm -rf monorepo
+                        if [ -d "edc-jenkins-pipeline-" ]; then
+                            rm -rf edc-jenkins-pipeline-
                         fi
                         echo "Cloning repository..."
-                        git clone https://${GIT_ACCESS_TOKEN}@github.com/Sanjaypramod/monorepo.git
+                        git clone https://${GIT_ACCESS_TOKEN}@github.com/Sanjaypramod/edc-jenkins-pipeline-.git
                     '''
                 }
             }
