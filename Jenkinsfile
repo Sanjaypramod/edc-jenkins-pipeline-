@@ -14,7 +14,13 @@ pipeline {
         }
         stage('Build and Push App1') {
             when {
-                changeset "app1/**, **/lerna.json, **/package.json, **/.gitignore, **/README.md"
+                anyOf {
+                    changeset "app1/**" // Match all changes in app1 directory
+                    changeset "**/lerna.json" // Match root-level lerna.json
+                    changeset "**/package.json" // Match root-level package.json
+                    changeset "**/.gitignore" // Match root-level .gitignore
+                    changeset "**/README.md" // Match root-level README.md
+                }
             }
             steps {
                 echo "Changes detected in App1. Building and pushing Docker image..."
@@ -40,7 +46,7 @@ pipeline {
         }
         stage('Build and Push App2') {
             when {
-                changeset "app2/**, **/lerna.json, **/package.json, **/.gitignore, **/README.md"
+                changeset "app2/**" // Match all changes in app2 directory
             }
             steps {
                 echo "Changes detected in App2. Building and pushing Docker image..."
