@@ -43,13 +43,13 @@ pipeline {
                         
                         // Build Docker image
                         sh """
-                        sudo docker build -t ${imageTag} -f Dockerfile .
+                        docker build -t ${imageTag} -f Dockerfile .
                         """
                         
                         // Push Docker image
                         withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID]) {
                             sh """
-                            sudo docker push ${imageTag}
+                            docker push ${imageTag}
                             """
                         }
                     }
