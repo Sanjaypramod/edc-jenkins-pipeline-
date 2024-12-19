@@ -20,7 +20,7 @@ pipeline {
                 """
             }
         }
-        stage('Build and Push App1') {
+        stage('Build and Push app1') {
             when {
                 anyOf {
                     changeset "app1/**" // Match all changes in app1 directory
@@ -43,9 +43,11 @@ pipeline {
                         """
 
                         // Build Docker image
-                        sh """
-                        docker build -t ${imageTag} -f Dockerfile .
-                        """
+                        dir('app1') { // Navigate to app1 directory
+                            sh """
+                            docker build -t ${imageTag} -f Dockerfile .
+                            """
+                        }
 
                         // Push Docker image
                         sh """
