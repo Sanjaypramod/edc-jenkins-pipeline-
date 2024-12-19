@@ -3,6 +3,7 @@ pipeline {
     environment {
         DOCKER_CREDENTIALS_ID = 'DOCKER_HUB' // Using your configured DockerHub credentials
         DOCKERHUB_NAMESPACE = 'sanjaypramod' // Replace with your DockerHub namespace
+        DOCKERHUB_REPO = 'edc_test' // Repository name in DockerHub
     }
     stages {
         stage('Checkout Code') {
@@ -20,7 +21,7 @@ pipeline {
                 dir('app1') {
                     script {
                         def appName = "app1"
-                        def imageTag = "${DOCKERHUB_NAMESPACE}/${appName}:${env.BUILD_NUMBER}"
+                        def imageTag = "${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPO}:${appName}-${env.BUILD_NUMBER}"
                         
                         // Build Docker image
                         sh """
@@ -46,7 +47,7 @@ pipeline {
                 dir('app2') {
                     script {
                         def appName = "app2"
-                        def imageTag = "${DOCKERHUB_NAMESPACE}/${appName}:${env.BUILD_NUMBER}"
+                        def imageTag = "${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPO}:${appName}-${env.BUILD_NUMBER}"
                         
                         // Build Docker image
                         sh """
