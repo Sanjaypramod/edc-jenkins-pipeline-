@@ -1,42 +1,74 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_CREDENTIALS_ID = 'DOCKER_HUB' // Using your configured DockerHub credentials
+        DOCKERHUB_NAMESPACE = 'sanjaypramod' // Replace with your DockerHub namespace
+    }
     stages {
-        // stage('Checkout') {
-        //     steps {
-        //         checkout scm
-        //     }
-        // }
         stage('Checkout Code') {
             steps {
                 echo "Checking out code from GitHub..."
-                withCredentials([string(credentialsId: 'GIT_ACCESS_TOKEN', variable: 'GIT_ACCESS_TOKEN')]) {
-                    sh '''#!/bin/bash
-                        set -e
-                        if [ -d "edc-jenkins-pipeline-" ]; then
-                            rm -rf edc-jenkins-pipeline-
-                        fi
-                        echo "Cloning repository..."
-                        git clone https://${GIT_ACCESS_TOKEN}@github.com/Sanjaypramod/edc-jenkins-pipeline-.git
-                    '''
+                checkout scm
+            }
+        }
+        stage('Build and Push App1') {
+            when {
+                changeset "app1/**, **/lerna.json, **/package.json, **/.gitignore, **/README.md"
+            }
+            steps {
+                echo "Changes detected in App1. Building and pushing Docker image..."
+                dir('app1') {
+                    script {
+                        def appName = "app1"
+                        def imageTag = "${DOCKERHUB_NAMESPACE}/${appName}:${env.BUILD_NUMBER}"
+                        
+                        // Build Docker image
+                        sh """
+                        docker build -t ${imageTag} -f Dockerfile .
+                        """
+                        
+                        // Push Docker image
+                        withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID]) {
+                            sh """
+                            docker push ${imageTag}
+                            """
+                        }
+                    }
                 }
             }
         }
-        stage('Build and Deploy Service A') {
+        stage('Build and Push App2') {
             when {
-                changeset "**/app1/**"
+                changeset "app2/**, **/lerna.json, **/package.json, **/.gitignore, **/README.md"
             }
             steps {
-                echo "Changes detected in service-a. Building and deploying..."
-                // Add your build and deployment commands here
+                echo "Changes detected in App2. Building and pushing Docker image..."
+                dir('app2') {
+                    script {
+                        def appName = "app2"
+                        def imageTag = "${DOCKERHUB_NAMESPACE}/${appName}:${env.BUILD_NUMBER}"
+                        
+                        // Build Docker image
+                        sh """
+                        docker build -t ${imageTag} -f Dockerfile .
+                        """
+                        
+                        // Push Docker image
+                        withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID]) {
+                            sh """
+                            docker push ${imageTag}
+                            """
+                        }
+                    }
+                }
             }
         }
-        stage('Build and Deploy Service B') {
+        stage('Notify Changes in Root') {
             when {
-                changeset "**/app2/**"
+                changeset "**/.gitignore, **/README.md, **/lerna.json, **/package.json"
             }
             steps {
-                echo "Changes detected in service-b. Building and deploying..."
-                // Add your build and deployment commands here
+                echo "Changes detected in root files. Consider rebuilding both services."
             }
         }
     }
