@@ -31,13 +31,13 @@ pipeline {
                         
                         // Build Docker image
                         sh """
-                        docker build -t ${imageTag} -f Dockerfile .
+                        sudo docker build -t ${imageTag} -f Dockerfile .
                         """
                         
                         // Push Docker image
                         withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID]) {
                             sh """
-                            docker push ${imageTag}
+                            sudo docker push ${imageTag}
                             """
                         }
                     }
@@ -57,13 +57,13 @@ pipeline {
                         
                         // Build Docker image
                         sh """
-                        docker build -t ${imageTag} -f Dockerfile .
+                        sudo docker build -t ${imageTag} -f Dockerfile .
                         """
                         
                         // Push Docker image
                         withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID]) {
                             sh """
-                            docker push ${imageTag}
+                            sudo docker push ${imageTag}
                             """
                         }
                     }
