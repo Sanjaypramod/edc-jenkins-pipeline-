@@ -1,0 +1,11 @@
+{
+  "name": "app1",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "echo 'Building app1...'"
+  },
+  "dependencies": {}
+}
+
